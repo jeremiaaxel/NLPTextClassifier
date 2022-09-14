@@ -1,0 +1,1 @@
+NLP - Fasttext: https://towardsdatascience.com/fasttext-for-text-classification-a4b38cbff27c
