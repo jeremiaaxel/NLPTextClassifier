@@ -7,6 +7,7 @@ name = "pypi"
 pandas = "*"
 fasttext = "*"
 gensim = "*"
+transformers = "*"
 
 [dev-packages]
 ipykernel = "*"
