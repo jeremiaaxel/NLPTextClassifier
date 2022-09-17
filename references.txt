@@ -1,1 +1,5 @@
-NLP - Fasttext: https://towardsdatascience.com/fasttext-for-text-classification-a4b38cbff27c
+[Fasttext]
+1. https://towardsdatascience.com/fasttext-for-text-classification-a4b38cbff27c
+
+[Fine Tuning Bert]
+1. https://www.geeksforgeeks.org/fine-tuning-bert-model-for-sentiment-analysis/
