@@ -1,1 +1,3 @@
 NLP - Fasttext: https://towardsdatascience.com/fasttext-for-text-classification-a4b38cbff27c
+SVM - CountVectorizer https://ai.plainenglish.io/sentiment-classification-using-xgboost-7abdaf4771f9
+SVM - XGBOOST https://towardsdatascience.com/basics-of-countvectorizer-e26677900f9c

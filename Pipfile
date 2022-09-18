@@ -7,6 +7,9 @@ name = "pypi"
 pandas = "*"
 fasttext = "*"
 gensim = "*"
+xgboost = "*"
+nltk = "*"
+scikit-learn = "*"
 
 [dev-packages]
 ipykernel = "*"
