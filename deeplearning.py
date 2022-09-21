@@ -33,14 +33,17 @@ test_df = pd.read_csv(os.path.join(__BASE_PATH, INPUT_FOLDER_PATH, TEST_FILENAME
 train_df.info()
 
 # %% Preprocess csv to txt for fasttext input
-fasttext_preprocessed_train = train_df[['text_a', 'label']]
-fasttext_preprocessed_test = test_df[['text_a', 'label']]
+fasttext_train = train_df[['text_a', 'label']]
+fasttext_test = test_df[['text_a', 'label']]
 
-fasttext_preprocessed_train.loc[:, 0] = fasttext_preprocessed_train.iloc[:, 0].apply(lambda x: ' '.join(simple_preprocess(x)))
-fasttext_preprocessed_test.loc[:, 0] = fasttext_preprocessed_test.iloc[:, 0].apply(lambda x: ' '.join(simple_preprocess(x)))
+fasttext_preprocessed_train = fasttext_train.copy()
+fasttext_preprocessed_test = fasttext_test.copy()
 
-fasttext_preprocessed_train.loc[:, 1] = fasttext_preprocessed_train.iloc[:, 1].apply(lambda x: ''.join('__label__' + x))
-fasttext_preprocessed_test.loc[:, 1] = fasttext_preprocessed_test.iloc[:, 1].apply(lambda x: ''.join('__label__' + x))
+fasttext_preprocessed_train.iloc[:, 0] = fasttext_train.iloc[:, 0].apply(lambda x: ' '.join(simple_preprocess(x)))
+fasttext_preprocessed_test.iloc[:, 0] = fasttext_test.iloc[:, 0].apply(lambda x: ' '.join(simple_preprocess(x)))
+
+fasttext_preprocessed_train.iloc[:, 1] = fasttext_train.iloc[:, 1].apply(lambda x: ''.join('__label__' + x))
+fasttext_preprocessed_test.iloc[:, 1] = fasttext_test.iloc[:, 1].apply(lambda x: ''.join('__label__' + x))
 
 fasttext_preprocessed_train[['label', 'text_a']].to_csv(
     os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TRAIN_FILENAME),
