@@ -36,11 +36,11 @@ train_df.info()
 fasttext_preprocessed_train = train_df[['text_a', 'label']]
 fasttext_preprocessed_test = test_df[['text_a', 'label']]
 
-fasttext_preprocessed_train.iloc[:, 0] = fasttext_preprocessed_train.iloc[:, 0].apply(lambda x: ' '.join(simple_preprocess(x)))
-fasttext_preprocessed_test.iloc[:, 0] = fasttext_preprocessed_test.iloc[:, 0].apply(lambda x: ' '.join(simple_preprocess(x)))
+fasttext_preprocessed_train.loc[:, 0] = fasttext_preprocessed_train.iloc[:, 0].apply(lambda x: ' '.join(simple_preprocess(x)))
+fasttext_preprocessed_test.loc[:, 0] = fasttext_preprocessed_test.iloc[:, 0].apply(lambda x: ' '.join(simple_preprocess(x)))
 
-fasttext_preprocessed_train.iloc[:, 1] = fasttext_preprocessed_train.iloc[:, 1].apply(lambda x: ''.join('__label__' + x))
-fasttext_preprocessed_test.iloc[:, 1] = fasttext_preprocessed_test.iloc[:, 1].apply(lambda x: ''.join('__label__' + x))
+fasttext_preprocessed_train.loc[:, 1] = fasttext_preprocessed_train.iloc[:, 1].apply(lambda x: ''.join('__label__' + x))
+fasttext_preprocessed_test.loc[:, 1] = fasttext_preprocessed_test.iloc[:, 1].apply(lambda x: ''.join('__label__' + x))
 
 fasttext_preprocessed_train[['label', 'text_a']].to_csv(
     os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TRAIN_FILENAME),
@@ -68,6 +68,9 @@ fasttext_preprocessed_test[['label', 'text_a']].to_csv(
 # Train
 dl_model = fasttext.train_supervised(os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TRAIN_FILENAME))
 # %% Test
-dl_model.test(os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TEST_FILENAME))
+dl_n_test, dl_precision, dl_recall = dl_model.test(os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TEST_FILENAME))
+print(f"[Deeplearning] Number of tests: {dl_n_test}")
+print(f"[Deeplearning] Precision: {dl_precision}")
+print(f"[Deeplearning] Recall: {dl_recall}")
 # %% Predict
 dl_model.predict(TEST_PREDICT_TEXT)
