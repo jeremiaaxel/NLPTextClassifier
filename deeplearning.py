@@ -68,12 +68,22 @@ fasttext_preprocessed_test[['label', 'text_a']].to_csv(
 # %% Deep learning: fasttext
 # https://fasttext.cc/docs/en/python-module.html
 
+fasttext_parameters = {
+    'lr': 1.0,
+    'epoch': 25,
+    'wordNgrams': 2, # bigrams
+    'bucket':200_000,
+    'dim': 50,
+    'loss': 'hs' # hierarchical softmax
+}
+
 # Train
-dl_model = fasttext.train_supervised(os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TRAIN_FILENAME))
+dl_model = fasttext.train_supervised(os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TRAIN_FILENAME), **fasttext_parameters)
 # %% Test
 dl_n_test, dl_precision, dl_recall = dl_model.test(os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TEST_FILENAME))
 print(f"[Deeplearning] Number of tests: {dl_n_test}")
 print(f"[Deeplearning] Precision: {dl_precision}")
 print(f"[Deeplearning] Recall: {dl_recall}")
 # %% Predict
-dl_model.predict(TEST_PREDICT_TEXT)
+dl_model.predict(TEST_PREDICT_TEXT, k=-1)
+# %%
