@@ -134,8 +134,8 @@ fasttext_parameters = {
     'lr': 0.1,
     'epoch': 25,
     'wordNgrams': 2,
-    'bucket':200_000,
-    'dim': 50,
+    'bucket':2_000_000,
+    'dim': 100,
     'loss': 'hs'
 }
 dl_model = fasttext.train_supervised(

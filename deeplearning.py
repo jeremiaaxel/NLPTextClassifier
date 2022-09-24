@@ -73,8 +73,8 @@ fasttext_parameters = {
     'lr': 0.1,
     'epoch': 25,
     'wordNgrams': 2, # bigrams
-    'bucket':200_000,
-    'dim': 50,
+    'bucket':2_000_000,
+    'dim': 100,
     'loss': 'hs' # hierarchical softmax
 }
 
