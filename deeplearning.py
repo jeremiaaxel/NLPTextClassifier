@@ -7,6 +7,7 @@ import numpy as np
 
 import fasttext
 from gensim.utils import simple_preprocess
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 
 # %% Configurations
 
@@ -69,7 +70,7 @@ fasttext_preprocessed_test[['label', 'text_a']].to_csv(
 # https://fasttext.cc/docs/en/python-module.html
 
 fasttext_parameters = {
-    'lr': 1.0,
+    'lr': 0.1,
     'epoch': 25,
     'wordNgrams': 2, # bigrams
     'bucket':200_000,
@@ -79,11 +80,20 @@ fasttext_parameters = {
 
 # Train
 dl_model = fasttext.train_supervised(os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TRAIN_FILENAME), **fasttext_parameters)
+print(f"Number of words: {len(dl_model.words)}")
+print(f"Number of labels: {len(dl_model.labels)}")
 # %% Test
-dl_n_test, dl_precision, dl_recall = dl_model.test(os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TEST_FILENAME))
-print(f"[Deeplearning] Number of tests: {dl_n_test}")
-print(f"[Deeplearning] Precision: {dl_precision}")
-print(f"[Deeplearning] Recall: {dl_recall}")
+fasttext_label_list = fasttext_preprocessed_test['label'].values.tolist()
+
+dl_prediction = dl_model.predict(
+    fasttext_preprocessed_test['text_a'].values.tolist(),
+    k=1
+)
+
+dl_prediction_flat = [item for sublist in dl_prediction[0] for item in sublist]
+print(f"[Deeplearning] Accuracy: {accuracy_score(fasttext_label_list, dl_prediction_flat)}")
+print(f"[Deeplearning] Precision: {precision_score(fasttext_label_list, dl_prediction_flat, pos_label='__label__yes')}")
+print(f"[Deeplearning] Recall: {recall_score(fasttext_label_list, dl_prediction_flat, pos_label='__label__yes')}")
+print(f"[Deeplearning] F1-score: {f1_score(fasttext_label_list, dl_prediction_flat, pos_label='__label__yes')}")
 # %% Predict
-dl_model.predict(TEST_PREDICT_TEXT, k=-1)
-# %%
+dl_model.predict(TEST_PREDICT_TEXT, k=1)
