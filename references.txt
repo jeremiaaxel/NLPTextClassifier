@@ -1,5 +1,11 @@
 [Fasttext]
 1. https://towardsdatascience.com/fasttext-for-text-classification-a4b38cbff27c
 
+[XGBOOST]
+1. https://towardsdatascience.com/basics-of-countvectorizer-e26677900f9c
+
+[CountVectorizer]
+1. https://ai.plainenglish.io/sentiment-classification-using-xgboost-7abdaf4771f9
+
 [Fine Tuning Bert]
 1. https://www.geeksforgeeks.org/fine-tuning-bert-model-for-sentiment-analysis/

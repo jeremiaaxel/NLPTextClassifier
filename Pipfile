@@ -12,6 +12,9 @@ torch = "*"
 numpy = "*"
 evaluate = "*"
 sklearn = "*"
+xgboost = "*"
+nltk = "*"
+scikit-learn = "*"
 
 [dev-packages]
 ipykernel = "*"
