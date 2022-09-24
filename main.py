@@ -11,6 +11,7 @@ from gensim.utils import simple_preprocess
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
 from nltk.corpus import stopwords
+from time import perf_counter
 # %% Download library-requirements
 nltk.download('stopwords')
 # %% Configurations
@@ -131,17 +132,20 @@ fasttext_preprocessed_test[['label', 'text_a']].to_csv(
 
 # %% Train
 fasttext_parameters = {
-    'lr': 0.1,
+    'lr': 1.0,
     'epoch': 25,
     'wordNgrams': 2,
     'bucket':2_000_000,
     'dim': 100,
     'loss': 'hs'
 }
+dl_train_time_start = perf_counter()
 dl_model = fasttext.train_supervised(
     os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TRAIN_FILENAME),
     **fasttext_parameters
 )
+dl_train_time_stop = perf_counter()
+print(f"Elapsed time: {dl_train_time_stop - dl_train_time_start}")
 print(f"Number of words: {len(dl_model.words)}")
 print(f"Number of labels: {len(dl_model.labels)}")
 # %% Test

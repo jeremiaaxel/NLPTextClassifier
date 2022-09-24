@@ -1,13 +1,14 @@
 # %% Import Libraries
 import os
 import csv
+import fasttext
 
 import pandas as pd
 import numpy as np
 
-import fasttext
 from gensim.utils import simple_preprocess
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from time import perf_counter
 
 # %% Configurations
 
@@ -70,7 +71,7 @@ fasttext_preprocessed_test[['label', 'text_a']].to_csv(
 # https://fasttext.cc/docs/en/python-module.html
 
 fasttext_parameters = {
-    'lr': 0.1,
+    'lr': 1.0,
     'epoch': 25,
     'wordNgrams': 2, # bigrams
     'bucket':2_000_000,
@@ -79,7 +80,10 @@ fasttext_parameters = {
 }
 
 # Train
+dl_train_time_start = perf_counter()
 dl_model = fasttext.train_supervised(os.path.join(__BASE_PATH, OUTPUT_FOLDER, FASTTEXT_TRAIN_FILENAME), **fasttext_parameters)
+dl_train_time_stop = perf_counter()
+print(f"Elapsed time: {dl_train_time_stop - dl_train_time_start}")
 print(f"Number of words: {len(dl_model.words)}")
 print(f"Number of labels: {len(dl_model.labels)}")
 # %% Test
