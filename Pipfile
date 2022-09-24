@@ -8,6 +8,9 @@ pandas = "*"
 fasttext = "*"
 gensim = "*"
 transformers = "*"
+torch = "*"
+numpy = "*"
+evaluate = "*"
 
 [dev-packages]
 ipykernel = "*"
