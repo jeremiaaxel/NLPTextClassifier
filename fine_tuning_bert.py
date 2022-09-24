@@ -4,6 +4,7 @@ import torch
 import numpy as np
 import evaluate
 import pandas as pd
+from sklearn.model_selection import train_test_split
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 
 # %% Configurations
@@ -40,6 +41,9 @@ train_df.info()
 train_queries = list(train_df['text_a'])
 train_labels = list(train_df['label'])
 
+train_queries, validation_queries, train_labels, validation_labels = train_test_split(train_queries, train_labels,
+																					  test_size=0.2, random_state=2022)
+
 test_queries = list(test_df['text_a'])
 test_labels = list(test_df['label'])
 
@@ -49,17 +53,18 @@ test_labels = list(test_df['label'])
 tokenizer = BertTokenizer.from_pretrained(BERT_PRETRAINED_MODEL_PATH, do_lower_case=True)
 
 
-def tokenize(queries):
+def tokenize(queries, labels):
 	toked_queries = [
 		{**tokenizer(query, truncation=True, padding='max_length', max_length=280, return_tensors='pt'),
-		 'labels': 0 if train_labels[i] == 'no' else 1} for (i, query) in enumerate(queries)]
+		 'labels': 0 if labels[i] == 'no' else 1} for (i, query) in enumerate(queries)]
 	# Squeeze the tensors into a 1D tensor
 	return [{key: toked[key].squeeze(0) if torch.is_tensor(toked[key]) else toked[key] for key in toked} for toked in
 			toked_queries]
 
 
-tokenized_train_data = tokenize(train_queries)
-tokenized_test_data = tokenize(test_queries)
+tokenized_train_data = tokenize(train_queries, train_labels)
+tokenized_validation_data = tokenize(validation_queries, validation_labels)
+tokenized_test_data = tokenize(test_queries, test_labels)
 
 tokenized_train_data[0]
 
@@ -92,7 +97,7 @@ trainer = Trainer(
 	model=model,
 	args=training_args,
 	train_dataset=tokenized_train_data,
-	eval_dataset=tokenized_test_data,
+	eval_dataset=tokenized_validation_data,
 	compute_metrics=compute_metrics,
 	tokenizer=tokenizer,
 )
