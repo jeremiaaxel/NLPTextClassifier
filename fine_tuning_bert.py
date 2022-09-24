@@ -7,27 +7,27 @@ import pandas as pd
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 
 # %% Configurations
+# Setup some constants
+COLAB_PREFIX = os.path.join('drive', 'Shareddrives', 'NLP', 'Text Classifier')
 TRAIN_FILENAME = "train.csv"
 TEST_FILENAME = "test.csv"
 LABEL_FILENAME = "labels.txt"
-INPUT_FOLDER_PATH = "drive/Shareddrives/NLP/Text Classifier/data_worthcheck"  # For Google colab
-
+INPUT_FOLDER_PATH = os.path.join(COLAB_PREFIX, "data_worthcheck")
 FASTTEXT_TRAIN_FILENAME = "train.txt"
 FASTTEXT_TEST_FILENAME = "test.txt"
-OUTPUT_FOLDER = "out"
-
-TEST_PREDICT_TEXT = "Josep ganteng anjay"
-
+OUTPUT_FOLDER = os.path.join(COLAB_PREFIX, "out")
 __BASE_PATH = os.getcwd()
 __FULL_OUTPUT_FOLDER = os.path.join(__BASE_PATH, OUTPUT_FOLDER)
+
+# Create output directory if not exist
 if not os.path.exists(__FULL_OUTPUT_FOLDER):
 	os.makedirs(__FULL_OUTPUT_FOLDER)
 
-os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:1024'
-
 BERT_PRETRAINED_MODEL_PATH = "indobenchmark/indobert-base-p2"
 
+# Set PyTorch device
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+# Set fine-tuning metric
 metric = evaluate.load('accuracy')
 
 # %% Prepare Datasets
@@ -45,17 +45,17 @@ test_labels = list(test_df['label'])
 
 (train_queries[0], train_labels[0])
 
-# %% Encode training data (create input IDs, token type IDs, and attention masks) in the form of tenors
+# %% Tokenized training data (create input IDs, token type IDs, and attention masks) in the form of tensors
 tokenizer = BertTokenizer.from_pretrained(BERT_PRETRAINED_MODEL_PATH, do_lower_case=True)
 
 
 def tokenize(queries):
-	tokenized_queries = [
+	toked_queries = [
 		{**tokenizer(query, truncation=True, padding='max_length', max_length=280, return_tensors='pt'),
 		 'labels': 0 if train_labels[i] == 'no' else 1} for (i, query) in enumerate(queries)]
 	# Squeeze the tensors into a 1D tensor
 	return [{key: toked[key].squeeze(0) if torch.is_tensor(toked[key]) else toked[key] for key in toked} for toked in
-			tokenized_queries]
+			toked_queries]
 
 
 tokenized_train_data = tokenize(train_queries)
@@ -68,10 +68,15 @@ model = BertForSequenceClassification.from_pretrained(BERT_PRETRAINED_MODEL_PATH
 model.to(device)
 
 # %% fine-tune model
+# Empty CUDA cache
 torch.cuda.empty_cache()
 
 
 def compute_metrics(eval_pred):
+	"""
+	the-compute metric method for trainer
+	Credits to: https://huggingface.co/docs/transformers/training
+	"""
 	logits, labels = eval_pred
 	predictions = np.argmax(logits, axis=-1)
 	return metric.compute(predictions=predictions, references=labels)
@@ -79,9 +84,8 @@ def compute_metrics(eval_pred):
 
 training_args = TrainingArguments(
 	evaluation_strategy='epoch',
-	logging_steps=200,
 	per_device_train_batch_size=16,
-	output_dir='./bert-output',
+	output_dir=__FULL_OUTPUT_FOLDER,
 	weight_decay=0.01,
 )
 trainer = Trainer(
