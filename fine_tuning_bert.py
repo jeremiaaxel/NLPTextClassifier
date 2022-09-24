@@ -13,7 +13,7 @@ COLAB_PREFIX = os.path.join('drive', 'Shareddrives', 'NLP', 'Text Classifier')
 TRAIN_FILENAME = "train.csv"
 TEST_FILENAME = "test.csv"
 LABEL_FILENAME = "labels.txt"
-INPUT_FOLDER_PATH = os.path.join(COLAB_PREFIX, "data_worthcheck")
+INPUT_FOLDER_PATH = os.path.join("data_worthcheck")
 FASTTEXT_TRAIN_FILENAME = "train.txt"
 FASTTEXT_TEST_FILENAME = "test.txt"
 OUTPUT_FOLDER = os.path.join(COLAB_PREFIX, "out")
@@ -30,6 +30,24 @@ BERT_PRETRAINED_MODEL_PATH = "indobenchmark/indobert-base-p2"
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 # Set fine-tuning metric
 metric = evaluate.load('accuracy')
+
+
+# %% Helper methods
+def map_label_to_id(label):
+	return 1 if label == 'yes' else 0
+
+
+def label_to_id(labels):
+	return [map_label_to_id(label) for label in labels]
+
+
+def map_id_to_label(id):
+	return 'yes' if id == 1 else 0
+
+
+def id_to_label(ids):
+	return [map_id_to_label(id) for id in ids]
+
 
 # %% Prepare Datasets
 train_df = pd.read_csv(os.path.join(__BASE_PATH, INPUT_FOLDER_PATH, TRAIN_FILENAME))
@@ -53,18 +71,35 @@ test_labels = list(test_df['label'])
 tokenizer = BertTokenizer.from_pretrained(BERT_PRETRAINED_MODEL_PATH, do_lower_case=True)
 
 
-def tokenize(queries, labels):
-	toked_queries = [
-		{**tokenizer(query, truncation=True, padding='max_length', max_length=280, return_tensors='pt'),
-		 'labels': 0 if labels[i] == 'no' else 1} for (i, query) in enumerate(queries)]
-	# Squeeze the tensors into a 1D tensor
-	return [{key: toked[key].squeeze(0) if torch.is_tensor(toked[key]) else toked[key] for key in toked} for toked in
-			toked_queries]
+def tokenize(queries, squeeze=True, labels=None):
+	tokenizer_args = {
+		'truncation': True,
+		'padding': 'max_length',
+		'max_length': 280,
+		'return_tensors': 'pt'
+	}
+	if labels is not None:
+		toked_queries = [
+			{**tokenizer(query, **tokenizer_args), 'labels': map_label_to_id(labels[i])} for (i, query) in
+			enumerate(queries)]
+	else:
+		toked_queries = [tokenizer(query, **tokenizer_args) for query in queries]
+	if squeeze:
+		# Squeeze the tensors into a 1D tensor
+		toked_queries = [{key: toked[key].squeeze(0) if torch.is_tensor(toked[key]) else toked[key] for key in toked}
+						 for toked in toked_queries]
+
+	return toked_queries
 
 
-tokenized_train_data = tokenize(train_queries, train_labels)
-tokenized_validation_data = tokenize(validation_queries, validation_labels)
-tokenized_test_data = tokenize(test_queries, test_labels)
+tokenized_train_data = tokenize(train_queries, labels=train_labels)
+tokenized_validation_data = tokenize(validation_queries, labels=validation_labels)
+tokenized_test_data = tokenize(test_queries, squeeze=False)
+# Set test data to use CUDA if available
+if torch.cuda.is_available():
+	for data in tokenized_test_data:
+		for k in data:
+			data[k].to(device)
 
 tokenized_train_data[0]
 
@@ -103,5 +138,19 @@ trainer = Trainer(
 )
 trainer.train()
 
-# %%
-model(**tokenized_test_data[0])
+# %% Test the model
+results = []
+counter = 1
+with torch.no_grad():
+	for test_data in tokenized_test_data:
+		output = model(**test_data)
+		final_output = torch.sigmoid(output.logits).cpu().detach().numpy().tolist()
+		result = map_id_to_label(np.argmax(final_output, axis=1)[0])
+		print(f'{counter}-th data:', result, final_output)
+		results.append(result)
+
+results
+
+# %% Evaluate testing results
+accuracy_result = metric.compute(references=test_labels, predictions=results)
+print('Accuracy:', accuracy_result['accuracy'])

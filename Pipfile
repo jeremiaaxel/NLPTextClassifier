@@ -11,6 +11,7 @@ transformers = "*"
 torch = "*"
 numpy = "*"
 evaluate = "*"
+sklearn = "*"
 
 [dev-packages]
 ipykernel = "*"
